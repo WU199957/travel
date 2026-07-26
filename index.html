@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>意大利+瑞士 · 威尼斯-维罗纳-罗马-阿马尔菲-日内瓦-蒙特勒 9/20-9/28</title>
+<meta name="description" content="意大利+瑞士九日游：威尼斯、维罗纳、罗马、阿马尔菲海岸、日内瓦、蒙特勒行程地图">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{--bg-primary:#fff;--bg-secondary:#f5f5f7;--bg-elevated:#fff;--text-primary:#1d1d1f;--text-secondary:#86868b;--text-tertiary:#aeaeb2;--accent:#0071e3;--tint-red:#ff3b30;--tint-orange:#ff9500;--tint-green:#34c759;--tint-blue:#007aff;--tint-purple:#af52de;--separator:rgba(60,60,67,.12);--shadow-sm:0 1px 3px rgba(0,0,0,.06);--shadow-md:0 4px 14px rgba(0,0,0,.08);--radius-md:12px;--radius-lg:16px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;background:var(--bg-secondary);color:var(--text-primary);-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+#map{width:100%;height:40vh;min-height:280px;position:sticky;top:0;z-index:100}
+.tabs{display:flex;gap:6px;padding:12px 16px;overflow-x:auto;background:rgba(255,255,255,.85);backdrop-filter:saturate(180%) blur(20px);position:sticky;top:40vh;z-index:99;border-bottom:.5px solid var(--separator)}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:7px 16px;border-radius:980px;border:none;background:var(--bg-secondary);color:var(--text-secondary);font-size:14px;font-weight:500;cursor:pointer;transition:all .25s}
+.tab.active{background:var(--accent);color:#fff}
+.content{max-width:680px;margin:0 auto;padding:16px 16px 40px}
+.hero{text-align:center;padding:28px 20px 20px}
+.hero h1{font-size:28px;font-weight:700;letter-spacing:-0.025em}
+.hero .subtitle{font-size:17px;color:var(--text-secondary);margin-top:6px}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.info-card{background:var(--bg-elevated);border-radius:var(--radius-lg);padding:16px;box-shadow:var(--shadow-sm)}
+.info-card .label{font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.02em;margin-bottom:6px}
+.info-card .value{font-size:15px;font-weight:600}
+.section-head{font-size:13px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.03em;padding:20px 0 8px}
+.day-head{padding:20px 0 12px}
+.day-head h2{font-size:22px;font-weight:700;letter-spacing:-0.02em}
+.day-head p{font-size:15px;color:var(--text-secondary);margin-top:2px}
+.train-info{background:var(--bg-elevated);border-radius:var(--radius-md);padding:14px 16px;box-shadow:var(--shadow-sm);margin-bottom:14px;border-left:4px solid var(--tint-blue)}
+.train-info .label{font-size:12px;font-weight:600;color:var(--tint-blue);margin-bottom:4px}
+.train-info .route{font-size:15px;font-weight:600;color:var(--text-primary)}
+.train-info .time{font-size:13px;color:var(--text-secondary);margin-top:2px}
+.timeline{position:relative;padding-left:28px}
+.timeline::before{content:'';position:absolute;left:9px;top:20px;bottom:20px;width:1.5px;background:var(--separator)}
+.tl-item{position:relative;margin-bottom:10px}
+.tl-dot{position:absolute;left:-22px;top:18px;width:14px;height:14px;border-radius:50%;z-index:1;box-shadow:0 0 0 3px var(--bg-secondary);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff}
+.tl-dot.spot{background:var(--tint-blue)}
+.tl-dot.hotel{background:var(--tint-orange)}
+.tl-dot.transport{background:var(--tint-green)}
+.card{background:var(--bg-elevated);border-radius:var(--radius-md);padding:14px 16px;box-shadow:var(--shadow-sm);cursor:pointer}
+.card .time{font-size:12px;font-weight:600;color:var(--text-tertiary)}
+.card .name{font-size:17px;font-weight:600;margin:2px 0 4px}
+.card .desc{font-size:14px;color:var(--text-secondary);line-height:1.45}
+.details{margin-top:10px;padding-top:10px;border-top:.5px solid var(--separator);font-size:13px;color:var(--text-secondary);line-height:1.6}
+.day-list .card{margin-bottom:8px}
+.day-list .card .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.pay-summary{background:var(--bg-elevated);border-radius:var(--radius-md);padding:14px 16px;box-shadow:var(--shadow-sm);font-size:13px;line-height:1.7;margin-bottom:10px}
+.pay-summary h4{font-size:14px;font-weight:700;margin-bottom:4px}
+.links{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:4px;padding:8px 14px;border-radius:var(--radius-md);font-size:13px;font-weight:600;border:none;cursor:pointer;text-decoration:none!important}
+.btn.nav{background:var(--accent);color:#fff}
+.btn.rsv{background:var(--tint-green);color:#fff}
+.legend{display:flex;gap:14px;flex-wrap:wrap;padding:8px 0;font-size:12px;color:var(--text-secondary)}
+.legend-item{display:flex;align-items:center;gap:5px}
+.legend-dot{width:8px;height:8px;border-radius:50%}
+.as-overlay{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.35);backdrop-filter:blur(2px);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.as-overlay.show{opacity:1;pointer-events:auto}
+.as-sheet{width:100%;max-width:420px;padding:0 8px 34px;transform:translateY(100%);transition:transform .3s cubic-bezier(.22,1,.36,1)}
+.as-overlay.show .as-sheet{transform:translateY(0)}
+.as-group{background:rgba(255,255,255,.88);backdrop-filter:blur(20px);border-radius:14px;overflow:hidden;margin-bottom:8px}
+.as-group .as-item{display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;font-size:18px;color:#007aff;font-weight:500;border:none;background:none;width:100%;cursor:pointer}
+.as-group .as-item+.as-item{border-top:.5px solid rgba(0,0,0,.12)}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div class="tabs" id="tabs"></div>
+<div class="content" id="content"></div>
+
+<script>
+// 火车站位置
+const STATIONS={
+venezia:{name:'威尼斯圣塔露西亚车站',lat:45.4411,lng:12.3205,gmap:'Venezia+Santa+Lucia'},
+verona:{name:'维罗纳Porta Nuova车站',lat:45.4291,lng:10.9823,gmap:'Verona+Porta+Nuova'},
+roma:{name:'罗马Termini车站',lat:41.9008,lng:12.5022,gmap:'Roma+Termini'}
+};
+
+const DAYS=[
+{id:0,label:'总览',color:'#0071e3',locations:[],train:null},
+{id:1,label:'D1',date:'9/20 (日) · 威尼斯',title:'威尼斯主岛',color:'#ff9500',train:{from:'米兰',to:'威尼斯',time:'TBD',duration:'约2.5小时',note:'Italo 高铁'},locations:[
+{name:'圣马可广场',lat:45.4341,lng:12.3388,type:'spot',time:'10:00',desc:'威尼斯地标，圣马可大教堂前广场',gmap:'Piazza+San+Marco+Venice',travelTime:'步行2min'},
+{name:'总督宫',lat:45.4336,lng:12.3407,type:'spot',time:'11:00',desc:'威尼斯共和国时期的政治中心，哥特式建筑',gmap:'Doge+Palace+Venice',travelTime:'步行5min'},
+{name:'凤凰歌剧院',lat:45.4338,lng:12.3336,type:'spot',time:'14:00',desc:'Teatro La Fenice，著名歌剧院',gmap:'Teatro+La+Fenice+Venice',travelTime:'步行15min'},
+{name:'学院桥',lat:45.4319,lng:12.3285,type:'spot',time:'16:00',desc:'Ponte dell\'Accademia，大运河上的木桥，观景绝佳',gmap:'Ponte+dell+Accademia+Venice',travelTime:'步行20min'},
+{name:'里托斯桥',lat:45.4381,lng:12.3359,type:'spot',time:'17:30',desc:'Ponte di Rialto，威尼斯最古老的大桥',gmap:'Rialto+Bridge+Venice',travelTime:'步行15min'},
+{name:'B&B HOTEL Venezia Laguna',lat:45.4408,lng:12.3155,type:'hotel',time:'19:00',desc:'距威尼斯圣塔露西亚车站 2.0km',gmap:'B%26B+Hotel+Venezia+Laguna'}
+]},
+{id:2,label:'D2',date:'9/21 (一) · 维罗纳',title:'罗密欧与朱丽叶之城',color:'#34c759',train:{from:'威尼斯',to:'维罗纳',time:'TBD',duration:'约1.5小时',note:'Italo 高铁'},locations:[
+{name:'维罗纳竞技场',lat:45.4391,lng:10.9939,type:'spot',time:'10:00',desc:'Arena di Verona，古罗马圆形剧场',gmap:'Arena+di+Verona',travelTime:'步行5min'},
+{name:'香草广场',lat:45.4426,lng:10.9964,type:'spot',time:'11:30',desc:'Piazza delle Erbe，古罗马集市遗址',gmap:'Piazza+delle+Erbe+Verona',travelTime:'步行3min'},
+{name:'朱丽叶故居',lat:45.4438,lng:10.9984,type:'spot',time:'13:00',desc:'Casa di Giulietta，罗密欧与朱丽叶故事发生地',gmap:'Casa+di+Giulietta+Verona',travelTime:'步行15min'},
+{name:'石桥',lat:45.4486,lng:11.0046,type:'spot',time:'15:00',desc:'Ponte Pietra，古罗马石桥，横跨阿迪杰河',gmap:'Ponte+Pietra+Verona',travelTime:'步行20min'},
+{name:'圣彼得城堡观景台',lat:45.4475,lng:11.0056,type:'spot',time:'18:00',desc:'Castel San Pietro，黄昏时刻登顶，俯瞰全城',detail:'⚠️ 需要预留时间爬山\n🌅 建议18:00前到达，看日落',gmap:'Castel+San+Pietro+Verona',travelTime:'步行20min'},
+{name:'Hotel Fontana Verona',lat:45.4415,lng:10.9935,type:'hotel',time:'20:00',desc:'距维罗纳Porta Nuova车站 1.5km',gmap:'Hotel+Fontana+Verona'}
+]},
+{id:3,label:'D3',date:'9/22 (二) · 罗马',title:'古罗马经典巡礼',color:'#af52de',train:{from:'维罗纳',to:'罗马',time:'TBD',duration:'约3小时',note:'Italo 高铁'},locations:[
+{name:'Lumi Hotel',lat:41.9038,lng:12.5008,type:'hotel',time:'12:00',desc:'抵达罗马，酒店放行李',gmap:'Lumi+Hotel+Rome',travelTime:'步行10min'},
+{name:'午餐',lat:41.8950,lng:12.4940,type:'spot',time:'12:30',desc:'快速午餐，附近简餐',gmap:'restaurant+near+colosseum+rome',travelTime:'步行10min'},
+{name:'斗兽场',lat:41.8902,lng:12.4924,type:'spot',time:'14:00',desc:'Colosseum，古罗马最宏伟的建筑',detail:'⚠️ 必须提前预约购票\n🎫 官网: ticketing.colosseo.it\n建议预订14:00入场',gmap:'Colosseum+Rome',travelTime:'公交15min'},
+{name:'万神殿',lat:41.8986,lng:12.4768,type:'spot',time:'16:00',desc:'Pantheon，古罗马神庙，完美穹顶（入内参观）',gmap:'Pantheon+Rome',travelTime:'步行15min'},
+{name:'威尼斯广场',lat:41.8958,lng:12.4823,type:'spot',time:'18:30',desc:'Piazza Venezia，祖国祭坛 Altare della Patria',detail:'🌅 一定要看黄昏时分的祖国祭坛',gmap:'Piazza+Venezia+Rome',travelTime:'步行5min'},
+{name:'晚餐',lat:41.8980,lng:12.4750,type:'spot',time:'19:30',desc:'万神殿附近晚餐',gmap:'restaurant+near+pantheon+rome',travelTime:'步行10min'},
+{name:'圣依纳爵堂',lat:41.8994,lng:12.4793,type:'spot',time:'20:30',desc:'Chiesa di Sant\'Ignazio，镜子教堂，假穹顶',detail:'📸 镜面拍照打卡点\n💡 需要投币点亮镜子',gmap:'Sant+Ignazio+Church+Rome',travelTime:'步行15min'},
+{name:'许愿池',lat:41.9009,lng:12.4833,type:'spot',time:'21:30',desc:'Trevi Fountain，夜景许愿池',detail:'🌙 夜晚灯光下的许愿池别有一番风味\n💰 背对喷泉投币许愿',gmap:'Trevi+Fountain'}
+]},
+{id:4,label:'D4',date:'9/23 (三) · 梵蒂冈',title:'圣彼得大教堂 + 梵蒂冈博物馆',color:'#ff3b30',train:null,locations:[
+{name:'圣彼得广场',lat:41.9022,lng:12.4566,type:'spot',time:'07:30',desc:'Piazza San Pietro，贝尼尼设计的巨型广场',gmap:'Piazza+San+Pietro',travelTime:'步行5min'},
+{name:'圣彼得大教堂',lat:41.9022,lng:12.4539,type:'spot',time:'08:00',desc:'Basilica di San Pietro，世界最大教堂之一',detail:'⏰ 08:00-09:15 参观\n建议早点到避开人群',gmap:'St+Peter+Basilica',travelTime:'🚕 打车15min'},
+{name:'博尔盖塞公园',lat:41.9142,lng:12.4922,type:'spot',time:'09:40',desc:'Villa Borghese Gardens，在公园湖上划船',detail:'🚣 09:40-12:00 划船休闲\n🚕 从圣彼得打车约15分钟',gmap:'Villa+Borghese+Gardens',travelTime:'步行10min'},
+{name:'午餐',lat:41.9120,lng:12.4900,type:'spot',time:'12:00',desc:'博尔盖塞公园附近午餐',gmap:'restaurant+near+villa+borghese+rome',travelTime:'慢慢返回'},
+{name:'梵蒂冈博物馆入口',lat:41.9065,lng:12.4536,type:'spot',time:'15:30',desc:'Musei Vaticani，世界最宏伟的博物馆之一',detail:'⚠️ 必须提前预约\n🎫 官网: tickets.museivaticani.va\n⏰ 16:00 入馆',gmap:'Vatican+Museums',travelTime:'馆内步行'},
+{name:'西斯廷礼拜堂',lat:41.9031,lng:12.4543,type:'spot',time:'17:00',desc:'Cappella Sistina，米开朗基罗天顶画《创世纪》',gmap:'Sistine+Chapel'}
+]},
+{id:5,label:'D5',date:'9/24 (四) · 阿马尔菲',title:'罗马 → 阿马尔菲海岸',color:'#5856d6',train:{from:'罗马',to:'萨莱诺',time:'TBD',duration:'约2小时',note:'Italo 高铁'},locations:[
+{name:'Roma Termini',lat:41.9009,lng:12.5015,type:'station',time:'出发',desc:'罗马中央火车站，乘坐高铁前往 Salerno',gmap:'Roma+Termini+Station'},
+{name:'Salerno 火车站',lat:40.6790,lng:14.7706,type:'station',time:'抵达 · 高铁约2小时',desc:'高铁到达后步行至码头（约10分钟）',gmap:'Salerno+Train+Station',travelTime:'10min'},
+{name:'Salerno 码头',lat:40.6775,lng:14.7650,type:'ferry',time:'—',desc:'乘坐渡轮前往 Amalfi',gmap:'Salerno+Ferry+Terminal',travelTime:'35min'},
+{name:'Amalfi 码头',lat:40.6344,lng:14.6027,type:'ferry',time:'抵达 · 渡轮约35分钟',desc:'渡轮抵达阿马尔菲',gmap:'Amalfi+Ferry+Terminal',travelTime:'步行5min'},
+{name:'Amalfi Cathedral',lat:40.6340,lng:14.6029,type:'spot',time:'游览',desc:'阿马尔菲主教堂，拜占庭-阿拉伯风格建筑',gmap:'Amalfi+Cathedral',travelTime:'步行3min'},
+{name:'Piazza Duomo',lat:40.6342,lng:14.6030,type:'spot',time:'—',desc:'主教堂广场，阿马尔菲的中心',gmap:'Piazza+Duomo+Amalfi',travelTime:'步行5min'},
+{name:'阿马尔菲老城区',lat:40.6345,lng:14.6035,type:'spot',time:'—',desc:'漫步中世纪小巷，柠檬特色商店',gmap:'Amalfi+Historic+Center',travelTime:'步行5min'},
+{name:'阿马尔菲海滨',lat:40.6330,lng:14.6020,type:'spot',time:'—',desc:'海滨码头，欣赏地中海风光',gmap:'Amalfi+Beach',travelTime:'步行10min'},
+{name:'SITA 公交站',lat:40.6350,lng:14.6040,type:'bus',time:'—',desc:'乘坐 SITA 公交前往 Agerola（Bomerano方向）',gmap:'Amalfi+SITA+Bus+Stop',travelTime:'公交约45min'},
+{name:'Hotel Le Rocce',lat:40.6389,lng:14.5289,type:'hotel',time:'入住 · 公交约45分钟',desc:'Via Belvedere, 73, Agerola',gmap:'Hotel+Le+Rocce+Agerola'}
+]},
+{id:6,label:'D6',date:'9/25 (五) · 神之路',title:'神之路徒步 → 波西塔诺',color:'#ff2d55',train:null,locations:[
+{name:'Hotel Le Rocce',lat:40.6389,lng:14.5289,type:'hotel',time:'早餐',desc:'酒店早餐后退房存行李',gmap:'Hotel+Le+Rocce+Agerola',travelTime:'步行10min'},
+{name:'Bomerano',lat:40.6400,lng:14.5300,type:'spot',time:'步行 · 约10分钟',desc:'从酒店步行至 Bomerano 村',gmap:'Bomerano+Agerola'},
+{name:'Sentiero degli Dei',lat:40.6405,lng:14.5250,type:'spot',time:'徒步起点',desc:'神之路起点，世界最美徒步路线之一',detail:'全程约7公里，预计3小时\nBomerano → Nocelle\n沿途可俯瞰阿马尔菲海岸线全景\n建议穿防滑徒步鞋，带足水',gmap:'Sentiero+degli+Dei+Trailhead',travelTime:'徒步约3h'},
+{name:'Nocelle 观景点',lat:40.6270,lng:14.5150,type:'spot',time:'— · 神之路终点',desc:'神之路终点，俯瞰波西塔诺全景',gmap:'Nocelle+Positano',travelTime:'坐车约15min'},
+{name:'Positano 主海滩',lat:40.6275,lng:14.4860,type:'spot',time:'午餐 · 从Nocelle坐车下山',desc:'Spiaggia Grande，波西塔诺最著名的海滩\n💡 备选方案：从 Nocelle 步行下山约1.5小时',gmap:'Spiaggia+Grande+Positano',travelTime:'步行10min'},
+{name:'波西塔诺彩色山城',lat:40.6285,lng:14.4850,type:'spot',time:'游览',desc:'漫步波西塔诺的彩色阶梯小巷',gmap:'Positano+Colorful+Houses',travelTime:'步行15min'},
+{name:'波西塔诺精品小店',lat:40.6290,lng:14.4870,type:'spot',time:'—',desc:'当地特色服装、陶瓷、柠檬制品',gmap:'Positano+Shopping',travelTime:'步行10min'},
+{name:'SITA 公交站',lat:40.6270,lng:14.4840,type:'bus',time:'—',desc:'乘坐 SITA 公交返回 Agerola',gmap:'Positano+SITA+Bus',travelTime:'公交约45min'}
+]},
+{id:7,label:'D7',date:'9/26 (六) · 庞贝',title:'庞贝古城 → 那不勒斯',color:'#af52de',train:{from:'庞贝',to:'那不勒斯',time:'TBD',duration:'约1小时',note:'Circumvesuviana 环线火车'},locations:[
+{name:'Hotel Le Rocce',lat:40.6389,lng:14.5289,type:'hotel',time:'退房',desc:'酒店退房，前往火车站',gmap:'Hotel+Le+Rocce+Agerola',travelTime:'公交约60min'},
+{name:'Agerola 公交站',lat:40.6390,lng:14.5290,type:'bus',time:'—',desc:'乘坐公交前往 Castellammare 或 Pompeii',gmap:'Agerola+Bus+Station',travelTime:'公交约20min'},
+{name:'Pompeii 火车站',lat:40.7460,lng:14.4980,type:'station',time:'—',desc:'Circumvesuviana 环线火车',gmap:'Pompeii+Scavi+Train+Station',travelTime:'步行5min'},
+{name:'Pompeii Archaeological Park',lat:40.7480,lng:14.4985,type:'spot',time:'游览 · 建议3小时',desc:'庞贝古城遗址',detail:'必看景点：\n• Forum（古罗马广场）\n• 大剧场（Teatro Grande）\n• 圆形剧场（Anfiteatro）\n• 古罗马街道与商铺\n• 石膏遗体（Forum Granary）\n• 古民居（Casa del Fauno等）\n• Villa dei Misteri（时间充裕可去）',gmap:'Pompeii+Archaeological+Park',travelTime:'火车约40min'},
+{name:'Napoli Centrale',lat:40.8520,lng:14.2730,type:'station',time:'抵达 · 火车约40分钟',desc:'那不勒斯中央火车站',gmap:'Napoli+Centrale',travelTime:'地铁约15min'},
+{name:'Ideal City Walk',lat:40.8500,lng:14.2500,type:'hotel',time:'入住',desc:'那不勒斯市区酒店',gmap:'Naples+City+Center+Hotel',travelTime:'休整'},
+{name:'Garibaldi 地铁站',lat:40.8525,lng:14.2735,type:'station',time:'17:00',desc:'从 Garibaldi 站搭乘 Metro Line 1',gmap:'Garibaldi+Metro+Station+Naples',travelTime:'地铁约10min'},
+{name:'Montesanto 站',lat:40.8450,lng:14.2450,type:'station',time:'—',desc:'Montesanto 站下车，步行约2-3分钟',gmap:'Montesanto+Station+Naples',travelTime:'步行3min'},
+{name:'Funicolare di Montesanto',lat:40.8455,lng:14.2445,type:'station',time:'—',desc:'搭乘 Montesanto 缆车（Funicolare）',gmap:'Funicolare+Montesanto+Naples',travelTime:'缆车约5min'},
+{name:'Morghen 站',lat:40.8470,lng:14.2400,type:'station',time:'—',desc:'Morghen 站下车，步行约5-8分钟',gmap:'Morghen+Station+Naples',travelTime:'步行8min'},
+{name:'Belvedere San Martino',lat:40.8475,lng:14.2410,type:'spot',time:'17:30–19:15',desc:'圣马蒂诺观景台，欣赏那不勒斯全景',detail:'🌅 欣赏那不勒斯全景\n🌋 维苏威火山\n🌊 那不勒斯湾\n☀️ 日落（约19:00）\n🌃 蓝调夜景',gmap:'Belvedere+San+Martino+Naples',travelTime:'步行15min'},
+{name:'Pizzeria Passionamij',lat:40.8480,lng:14.2450,type:'spot',time:'20:00',desc:'晚餐 — 那不勒斯披萨',gmap:'Pizzeria+Passionamij+Naples',travelTime:'回酒店'}
+]},
+{id:8,label:'D8',date:'9/27 (日) · 日内瓦',title:'那不勒斯 → 日内瓦',color:'#5856d6',train:null,locations:[
+{name:'Ideal City Walk',lat:40.8500,lng:14.2500,type:'hotel',time:'08:30',desc:'早餐',gmap:'Naples+City+Center+Hotel',travelTime:'准备退房'},
+{name:'Ideal City Walk',lat:40.8500,lng:14.2500,type:'hotel',time:'10:30',desc:'退房',gmap:'Naples+City+Center+Hotel',travelTime:'🚕 出租车约20min'},
+{name:'Napoli Airport',lat:40.8840,lng:14.2900,type:'station',time:'11:30',desc:'那不勒斯国际机场',gmap:'Naples+International+Airport',travelTime:'机场办理手续'},
+{name:'NAP ✈ GVA',lat:40.8840,lng:14.2900,type:'spot',time:'14:55',desc:'那不勒斯 → 日内瓦 航班',detail:'✈️ 飞行时间约1小时50分钟',gmap:'Naples+Airport+Terminal',travelTime:'飞行约1h50m'},
+{name:'Geneva Airport',lat:46.2380,lng:6.1090,type:'station',time:'16:45',desc:'日内瓦机场抵达',gmap:'Geneva+Airport',travelTime:'火车约7min'},
+{name:'Genève Cornavin',lat:46.2100,lng:6.1430,type:'station',time:'17:00',desc:'日内瓦中央火车站',gmap:'Geneve+Cornavin+Station',travelTime:'步行5min'},
+{name:'Royal Manotel',lat:46.2150,lng:6.1450,type:'hotel',time:'17:15',desc:'入住 Royal Manotel 酒店',gmap:'Royal+Manotel+Geneva',travelTime:'Tram 15约10min'},
+{name:'Palace of Nations',lat:46.2265,lng:6.1405,type:'spot',time:'18:10',desc:'万国宫，联合国欧洲总部',detail:'🚊 Tram 15 → Nations 站下车\n⏰ 18:10-19:30 参观\n📸 外观拍照，广场漫步',gmap:'Palace+of+Nations+Geneva',travelTime:'步行2min'},
+{name:'Broken Chair',lat:46.2265,lng:6.1410,type:'spot',time:'—',desc:'断腿木椅，反地雷标志',gmap:'Broken+Chair+Geneva',travelTime:'步行1min'},
+{name:'Place des Nations',lat:46.2260,lng:6.1415,type:'spot',time:'—',desc:'万国广场，联合国广场',gmap:'Place+des+Nations+Geneva'}
+]},
+{id:9,label:'D9',date:'9/28 (一) · 蒙特勒',title:'日内瓦 → 蒙特勒',color:'#007aff',train:{from:'日内瓦',to:'蒙特勒',time:'10:15',duration:'约1小时10分钟',note:'瑞士火车'},locations:[
+{name:'Genève Cornavin',lat:46.2100,lng:6.1430,type:'station',time:'10:15',desc:'日内瓦中央火车站出发',gmap:'Geneve+Cornavin+Station',travelTime:'火车约1h10m'},
+{name:'Montreux 火车站',lat:46.4330,lng:6.9100,type:'station',time:'11:30',desc:'抵达蒙特勒',gmap:'Montreux+Train+Station',travelTime:'步行2min'},
+{name:'Grand Hotel Suisse Majestic',lat:46.4335,lng:6.9105,type:'hotel',time:'入住',desc:'入住/寄存行李',gmap:'Grand+Hotel+Suisse+Majestic+Montreux',travelTime:'步行10min'},
+{name:'午餐',lat:46.4340,lng:6.9110,type:'spot',time:'12:00',desc:'蒙特勒市区午餐',gmap:'restaurant+montreux',travelTime:'火车约3min'},
+{name:'Chillon Castle',lat:46.4142,lng:6.9276,type:'spot',time:'13:30',desc:'西庸城堡，日内瓦湖畔的中世纪古堡',detail:'⏰ 13:30-15:30 参观\n🚂 建议火车约3分钟或201路公交',gmap:'Chillon+Castle+Montreux',travelTime:'步行45-60min'},
+{name:'日内瓦湖步道',lat:46.4230,lng:6.9180,type:'spot',time:'15:30',desc:'沿日内瓦湖步行返回市区',detail:'沿途欣赏：\n・日内瓦湖\n・天鹅\n・湖滨花园\n・葡萄园远景',gmap:'Lake+Geneva+Montreux+Promenade',travelTime:'步行15min'},
+{name:'Freddie Mercury Statue',lat:46.4310,lng:6.9095,type:'spot',time:'16:30',desc:'弗雷迪·默丘里雕像，皇后乐队主唱',gmap:'Freddie+Mercury+Statue+Montreux',travelTime:'步行5min'},
+{name:'Montreux Lakeside Promenade',lat:46.4320,lng:6.9080,type:'spot',time:'16:45',desc:'蒙特勒湖滨大道散步',gmap:'Montreux+Lakeside+Promenade'}
+]},
+{id:10,label:'D10',date:'9/29 (二) · 因特拉肯',title:'GoldenPass → Interlaken → Wengen',color:'#ff9500',train:{from:'蒙特勒',to:'因特拉肯',time:'07:32',duration:'约3小时15分钟',note:'GoldenPass Express'},locations:[
+{name:'Montreux 车站',lat:46.4338,lng:6.9104,type:'station',time:'07:32',desc:'GoldenPass Express 出发',gmap:'Montreux+train+station',travelTime:'火车约3h15m'},
+{name:'GoldenPass Express',lat:46.5000,lng:7.2000,type:'spot',time:'07:32-10:48',desc:'全景列车，欣赏瑞士阿尔卑斯山景',detail:'🚂 经典瑞士全景列车\n🏔️ 沿途风景绝美',gmap:'GoldenPass+Line',travelTime:'抵达'},
+{name:'Interlaken Ost',lat:46.6907,lng:7.8580,type:'station',time:'10:48',desc:'抵达，寄存行李',gmap:'Interlaken+Ost',travelTime:'步行5min'},
+{name:'Interlaken 午餐',lat:46.6858,lng:7.8580,type:'spot',time:'12:00',desc:'小镇午餐',gmap:'Interlaken+restaurant',travelTime:'火车约20min'},
+{name:'Lauterbrunnen',lat:46.5958,lng:7.9076,type:'spot',time:'14:00',desc:'瀑布小镇，寄存行李',gmap:'Lauterbrunnen',travelTime:'步行5min'},
+{name:'Lauterbrunnen Church',lat:46.5950,lng:7.9080,type:'spot',time:'14:30',desc:'小镇教堂',gmap:'Lauterbrunnen+Church',travelTime:'步行10min'},
+{name:'Staubbach Falls',lat:46.5880,lng:7.9090,type:'spot',time:'15:00',desc:'著名瀑布，可走近',detail:'💧 落差297米的瀑布\n🚶 可步行至瀑布下方',gmap:'Staubbach+Falls',travelTime:'火车约15min'},
+{name:'Hotel Victoria-Lauberhorn',lat:46.6056,lng:7.9214,type:'hotel',time:'17:00',desc:'入住 Wengen 酒店',gmap:'Hotel+Victoria-Lauberhorn+Wengen'}
+]},
+{id:11,label:'D11',date:'9/30 (三) · First山',title:'First + Pfingstegg 一日游',color:'#34c759',train:null,locations:[
+{name:'Wengen 出发',lat:46.6056,lng:7.9214,type:'station',time:'08:00',desc:'前往 Grindelwald',gmap:'Wengen+train+station',travelTime:'火车约20min'},
+{name:'Wengen → Lauterbrunnen',lat:46.5958,lng:7.9076,type:'station',time:'08:00-08:20',desc:'火车约20分钟',gmap:'Lauterbrunnen',travelTime:'火车约10min'},
+{name:'Lauterbrunnen → Zweilütschinen',lat:46.6167,lng:7.9167,type:'station',time:'08:20-08:30',desc:'火车换乘',gmap:'Zweilütschinen',travelTime:'火车约45min'},
+{name:'Zweilütschinen → Grindelwald',lat:46.6242,lng:8.0414,type:'station',time:'08:30-09:15',desc:'火车约45分钟',gmap:'Grindelwald+train+station',travelTime:'步行5min'},
+{name:'Firstbahn 缆车',lat:46.6242,lng:8.0414,type:'spot',time:'09:15',desc:'缆车上 First 山顶',detail:'🚠 First 山缆车\n💰 CHF 68 往返',gmap:'Firstbahn+Grindelwald',travelTime:'缆车约25min'},
+{name:'First Cliff Walk',lat:46.6580,lng:8.0550,type:'spot',time:'09:15-09:45',desc:'悬崖步道，免费',detail:'🚶 悬崖边的悬空步道\n📸 拍照绝佳',gmap:'First+Cliff+Walk',travelTime:'步行5min'},
+{name:'First Flyer',lat:46.6580,lng:8.0550,type:'spot',time:'09:45-10:15',desc:'飞索体验',detail:'🎢 高空飞索\n💰 CHF 31',gmap:'First+Flyer',travelTime:'步行5min'},
+{name:'Mountain Cart',lat:46.6550,lng:8.0500,type:'spot',time:'10:20-11:00',desc:'山地卡丁车',detail:'🛴 无动力山地卡丁车\n💰 CHF 21',gmap:'First+Mountain+Cart',travelTime:'徒步起点'},
+{name:'Bachalpsee 徒步',lat:46.6690,lng:8.0410,type:'spot',time:'11:00-12:40',desc:'高山湖泊徒步，往返约1.5小时',detail:'🥾 天气好才走\n🏔️ 高山湖泊美景\n⏰ 往返约1.5小时',gmap:'Bachalpsee',travelTime:'步行10min'},
+{name:'First 山顶午餐',lat:46.6580,lng:8.0550,type:'spot',time:'12:40-13:40',desc:'Bergrestaurant First',detail:'🍽️ 山顶餐厅\n💰 CHF 25-40',gmap:'Bergrestaurant+First',travelTime:'缆车约25min'},
+{name:'First 缆车下山',lat:46.6580,lng:8.0550,type:'spot',time:'14:10',desc:'返回 Grindelwald',gmap:'Firstbahn',travelTime:'步行15min'},
+{name:'Pfingsteggbahn',lat:46.6242,lng:8.0414,type:'spot',time:'15:05',desc:'缆车上 Pfingstegg',detail:'🚠 Pfingstegg 缆车\n💰 CHF 24 往返',gmap:'Pfingsteggbahn+Grindelwald',travelTime:'缆车约10min'},
+{name:'Summer Toboggan',lat:46.6350,lng:8.0450,type:'spot',time:'15:05-16:45',desc:'夏季雪橇，建议玩2-3次',detail:'🛷 夏季雪橇滑道\n💰 CHF 6/次\n🔄 建议玩2-3次',gmap:'Pfingstegg+Toboggan',travelTime:'火车约75min'},
+{name:'返回 Wengen',lat:46.6056,lng:7.9214,type:'station',time:'17:30-18:30',desc:'火车返回',gmap:'Wengen'}
+]},
+{id:12,label:'D12',date:'10/1 (四) · 少女峰',title:'Jungfraujoch 一日游',color:'#007aff',train:null,locations:[
+{name:'Wengen 出发',lat:46.6056,lng:7.9214,type:'station',time:'07:30',desc:'早起前往少女峰',gmap:'Wengen+train+station',travelTime:'火车约45min'},
+{name:'Wengen → Kleine Scheidegg',lat:46.5850,lng:7.9600,type:'station',time:'07:30-08:15',desc:'火车约45分钟',gmap:'Kleine+Scheidegg',travelTime:'火车约75min'},
+{name:'Kleine Scheidegg → Jungfraujoch',lat:46.5475,lng:7.9856,type:'station',time:'08:15-09:30',desc:'少女峰登山火车，需预约座位',detail:'🚂 欧洲最高火车站\n💰 CHF 210 往返\n⚠️ 必须提前预约座位',gmap:'Jungfraujoch+train',travelTime:'山顶游览'},
+{name:'Sphinx 观景台',lat:46.5475,lng:7.9856,type:'spot',time:'09:30-10:30',desc:'欧洲最高火车站，360°观景',detail:'🏔️ 海拔3571米\n📸 360度全景',gmap:'Sphinx+Observatory+Jungfraujoch',travelTime:'步行10min'},
+{name:'Ice Palace 冰宫',lat:46.5475,lng:7.9856,type:'spot',time:'10:30-11:30',desc:'冰川隧道，冰雕展览',detail:'🧊 冰川内部隧道\n🗿 冰雕展览',gmap:'Ice+Palace+Jungfraujoch',travelTime:'步行10min'},
+{name:'Alpine Sensation',lat:46.5475,lng:7.9856,type:'spot',time:'11:30-12:00',desc:'少女峰铁路历史展览',gmap:'Alpine+Sensation',travelTime:'步行5min'},
+{name:'山顶午餐',lat:46.5475,lng:7.9856,type:'spot',time:'12:30-13:30',desc:'Restaurant Aletsch 或自助餐厅',detail:'🍽️ 山顶餐厅\n💰 CHF 30-50',gmap:'Restaurant+Aletsch+Jungfraujoch',travelTime:'火车约75min'},
+{name:'Jungfraujoch 下山',lat:46.5475,lng:7.9856,type:'station',time:'14:00',desc:'返回 Kleine Scheidegg',gmap:'Jungfraujoch',travelTime:'火车约60min'},
+{name:'Kleine Scheidegg → Wengen',lat:46.5850,lng:7.9600,type:'station',time:'15:30-16:30',desc:'火车返回',gmap:'Kleine+Scheidegg',travelTime:'火车约30min'},
+{name:'Wengen → Interlaken Ost',lat:46.6907,lng:7.8580,type:'station',time:'16:30-18:00',desc:'取行李（如Day10寄存）',gmap:'Interlaken+Ost',travelTime:'步行5min'},
+{name:'Interlaken 晚餐',lat:46.6858,lng:7.8580,type:'spot',time:'18:00-19:00',desc:'最后一晚',gmap:'Interlaken+restaurant'}
+]}
+];
+
+function overviewContent(){
+return`<div class="hero"><h1>🇮🇹🇨🇭 意大利 + 瑞士九日游</h1><p class="subtitle">威尼斯 · 维罗纳 · 罗马 · 阿马尔菲海岸 · 日内瓦 · 蒙特勒</p></div>
+<div class="info-grid">
+<div class="info-card"><div class="label">日期</div><div class="value">9/20 - 10/1</div></div>
+<div class="info-card"><div class="label">城市</div><div class="value">8座城市</div></div>
+<div class="info-card"><div class="label">交通</div><div class="value">高铁 + 渡轮 + 飞机 + 火车 + 缆车</div></div>
+<div class="info-card"><div class="label">路线</div><div class="value">米兰 → 那不勒斯 → 日内瓦 → 蒙特勒 → 少女峰</div></div>
+</div>
+<div class="section-head">行程概览</div>
+<div class="day-list">${DAYS.slice(1).map(d=>`<div class="card" onclick="go(${d.id})"><div class="name"><span class="dot" style="background:${d.color}"></span>${d.label} · ${d.title}</div><div class="desc">${d.date}</div></div>`).join('')}</div>
+<div class="section-head">⚠️ 重要提醒</div>
+<div class="pay-summary">
+<h4>必须提前预约</h4>
+<p><strong>斗兽场</strong><br>官网: <a href="https://ticketing.colosseo.it/" target="_blank">ticketing.colosseo.it</a><br>建议预约 9/22 14:00 入场</p>
+<p style="margin-top:10px"><strong>梵蒂冈博物馆</strong><br>官网: <a href="https://tickets.museivaticani.va/home" target="_blank">tickets.museivaticani.va</a><br>建议预约 9/23 16:00 入场</p>
+<p style="margin-top:10px"><strong>庞贝古城</strong><br>建议提前官网预约，避免现场排队</p>
+<p style="margin-top:10px"><strong>少女峰登山火车</strong><br>官网: <a href="https://www.jungfrau.ch" target="_blank">jungfrau.ch</a><br>⚠️ 必须提前预约座位，建议买 Good Morning Ticket</p>
+</div>
+<div class="pay-summary">
+<h4>黄昏特别安排</h4>
+<p>🌅 9/21 维罗纳圣彼得城堡观景台 — 预留爬山时间<br>🌅 9/22 威尼斯广场祖国祭坛 — 一定要看黄昏<br>📸 9/22 圣依纳爵堂镜子教堂 — 投币点亮镜子</p>
+</div>
+<div class="pay-summary">
+<h4>🥾 阿马尔菲徒步装备</h4>
+<p>• 神之路为山地徒步，请穿<strong>防滑徒步鞋</strong><br>
+• 带足水和少量食物，沿途补给点有限<br>
+• 建议早上8-9点出发，避开正午烈日</p>
+</div>
+<div class="pay-summary">
+<h4>🌤️ 瑞士天气敏感点</h4>
+<p><strong>Day 11 (First山):</strong><br>
+• Bachalpsee 徒步 - 下雨/大雾可跳过<br>
+• First Flyer 和 Mountain Cart 受天气影响</p>
+<p style="margin-top:8px"><strong>Day 12 (少女峰):</strong><br>
+• 全程天气敏感，大雾/暴风雪可能关闭<br>
+• 出发前务必查 webcam: jungfrau.ch<br>
+• 建议早起，07:30出发避开人潮</p>
+</div>
+<div class="section-head">图例</div>
+<div class="legend">
+<div class="legend-item"><div class="legend-dot" style="background:var(--tint-blue)"></div>景点(数字=顺序)</div>
+<div class="legend-item"><div class="legend-dot" style="background:var(--tint-green)"></div>火车站</div>
+<div class="legend-item"><div class="legend-dot" style="background:var(--tint-orange)"></div>酒店</div>
+</div>`}
+
+const map=L.map('map',{center:[42.5,12.5],zoom:6,zoomControl:false,attributionControl:true});
+L.control.zoom({position:'topright'}).addTo(map);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(map);
+
+let markers=[],polylines=[];
+function icon(color,text,isNum=false){return L.divIcon({className:'',html:`<div style="width:28px;height:28px;border-radius:50%;background:${color};border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:${isNum?'12px':'14px'};font-weight:700;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.18)">${text}</div>`,iconSize:[28,28],iconAnchor:[14,14]})}
+function clearMap(){markers.forEach(m=>map.removeLayer(m));polylines.forEach(p=>map.removeLayer(p));markers=[];polylines=[]}
+
+function showDay(idx){
+clearMap();
+if(idx===0){
+const pts=[];DAYS.forEach(d=>d.locations.forEach(l=>{if(l.lat)pts.push([l.lat,l.lng])}));
+Object.values(STATIONS).forEach(s=>pts.push([s.lat,s.lng]));
+if(pts.length)map.fitBounds(pts,{padding:[30,30]});
+DAYS.slice(1).forEach(d=>{
+d.locations.forEach((l,i)=>{if(l.type==='spot'){const num=i+1;const m=L.marker([l.lat,l.lng],{icon:icon(d.color,String(num),true)}).addTo(map).bindPopup(`<b>${num}. ${l.name}</b>`);markers.push(m)}});
+});
+Object.values(STATIONS).forEach(s=>{const m=L.marker([s.lat,s.lng],{icon:icon('#34c759','🚆')}).addTo(map).bindPopup(`<b>${s.name}</b>`);markers.push(m)});
+return}
+
+const day=DAYS.find(d=>d.id===idx);if(!day)return;
+const coords=[];
+let spotNum=0;
+day.locations.forEach(l=>{if(!l.lat)return;
+let m;
+if(l.type==='spot'){spotNum++;m=L.marker([l.lat,l.lng],{icon:icon(day.color,String(spotNum),true)}).bindPopup(`<b>${spotNum}. ${l.name}</b>`);}
+else if(l.type==='station'){m=L.marker([l.lat,l.lng],{icon:icon('#34c759','🚆')}).bindPopup(`<b>${l.name}</b>`);}
+else if(l.type==='ferry'){m=L.marker([l.lat,l.lng],{icon:icon('#007aff','⛴️')}).bindPopup(`<b>${l.name}</b>`);}
+else if(l.type==='bus'){m=L.marker([l.lat,l.lng],{icon:icon('#ff9500','🚌')}).bindPopup(`<b>${l.name}</b>`);}
+else{m=L.marker([l.lat,l.lng],{icon:icon(day.color,'🏨')}).bindPopup(`<b>${l.name}</b>`);}
+m.addTo(map);
+const gmapQ=l.gmap||encodeURIComponent(l.name);
+m.bindPopup(m.getPopup().getContent()+`<br><a href="#" onclick="event.preventDefault();openAS('${l.name.replace(/'/g,"\\'")}',${l.lat},${l.lng},'${gmapQ}')">📍 导航</a>`);
+markers.push(m);
+if(l.time)coords.push([l.lat,l.lng]);
+});
+
+// 添加当天城市的火车站
+let station=null;
+if(idx===1)station=STATIONS.venezia;
+else if(idx===2)station=STATIONS.verona;
+else if(idx>=3&&idx<=4)station=STATIONS.roma;
+// Day 5-7 使用阿马尔菲区域的火车站/码头
+if(station){const sm=L.marker([station.lat,station.lng],{icon:icon('#34c759','🚆')}).addTo(map).bindPopup(`<b>${station.name}</b><br><a href="#" onclick="event.preventDefault();openAS('${station.name.replace(/'/g,"\\'")}',${station.lat},${station.lng},'${station.gmap}')">📍 导航</a>`);markers.push(sm);}
+
+// 添加酒店标记 - D4使用D3的酒店（罗马Lumi Hotel）
+let hotel=day.locations.find(l=>l.type==='hotel');
+if(!hotel&&idx===4)hotel=DAYS[3].locations.find(l=>l.type==='hotel');
+if(hotel){const hm=L.marker([hotel.lat,hotel.lng],{icon:icon(day.color,'🏨')}).addTo(map).bindPopup(`<b>${hotel.name}</b><br>${hotel.desc}<br><a href="#" onclick="event.preventDefault();openAS('${hotel.name.replace(/'/g,"\\'")}',${hotel.lat},${hotel.lng},'${hotel.gmap}')">📍 导航</a>`);markers.push(hm);}
+
+if(coords.length>1){const pl=L.polyline(coords,{color:day.color,weight:2.5,opacity:.5,dashArray:'6,5'}).addTo(map);polylines.push(pl)}
+if(coords.length)map.fitBounds(coords,{padding:[40,40],maxZoom:14})
+}
+
+function locCard(loc,dayIdx,spotIndex,showTravelTime){
+const dot=loc.type==='spot'?'spot':loc.type==='hotel'?'hotel':loc.type==='station'?'transport':loc.type==='ferry'?'transport':loc.type==='bus'?'transport':'transport';
+const num=loc.type==='spot'?spotIndex:'';
+const uid=`d${dayIdx}-${loc.name.replace(/\W/g,'')}`;
+const gmapQ=loc.gmap||encodeURIComponent(loc.name);
+let lnk=`<button class="btn nav" onclick="openAS('${loc.name.replace(/'/g,"\\'")}',${loc.lat},${loc.lng},'${gmapQ}')">📍 导航</button>`;
+if(loc.reserve)lnk+=`<a href="${loc.reserve}" target="_blank" class="btn rsv">📅 预约</a>`;
+const travelTimeHtml=showTravelTime?`<div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;padding:4px 8px;background:var(--bg-secondary);border-radius:4px;display:inline-block">⏱️ 到下一站: ${loc.travelTime}</div>`:'';
+return`<div class="tl-item"><div class="tl-dot ${dot}">${num}</div><div class="card"><div class="time">${loc.time}</div><div class="name">${loc.type==='spot'?spotIndex+'. ':''}${loc.name}</div><div class="desc">${loc.desc}</div>${loc.detail?`<div class="details">${loc.detail.replace(/\n/g,'<br>')}</div>`:''}<div class="links">${lnk}</div>${travelTimeHtml}</div></div>`
+}
+
+function renderDay(idx){
+const d=DAYS.find(x=>x.id===idx);if(!d)return'';
+let h='';
+// 火车信息
+if(d.train){h+=`<div class="train-info"><div class="label">🚆 火车 ${d.train.note} · ${d.train.duration}</div><div class="route">${d.train.from} → ${d.train.to}</div><div class="time">发车时间: ${d.train.time}</div></div>`;}
+h+=`<div class="day-head"><h2>${d.title}</h2><p>${d.date}</p></div>`;
+h+='<div class="section-head">行程</div><div class="timeline">';
+let spotIndex=0;
+d.locations.forEach((l,i)=>{if(l.type==='spot')spotIndex++;const showTravelTime=l.travelTime&&i<d.locations.length-1;h+=locCard(l,idx,l.type==='spot'?spotIndex:null,showTravelTime);});
+return h+'</div>'
+}
+
+let cur=0;
+const tabsEl=document.getElementById('tabs');
+const contentEl=document.getElementById('content');
+DAYS.forEach(d=>{const btn=document.createElement('button');btn.className='tab'+(d.id===0?' active':'');btn.dataset.day=d.id;btn.textContent=d.label;tabsEl.appendChild(btn)});
+function go(idx){cur=idx;tabsEl.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',+t.dataset.day===idx));contentEl.innerHTML=idx===0?overviewContent():renderDay(idx);showDay(idx);contentEl.scrollTo({top:0})}
+tabsEl.addEventListener('click',e=>{const t=e.target.closest('.tab');if(t)go(+t.dataset.day)});
+
+const asOverlay=document.createElement('div');asOverlay.className='as-overlay';asOverlay.innerHTML=`<div class="as-sheet"><div class="as-group" id="as-opts"></div><div class="as-group"><button class="as-item as-cancel" onclick="closeAS()">取消</button></div></div>`;document.body.appendChild(asOverlay);asOverlay.addEventListener('click',e=>{if(e.target===asOverlay)closeAS()});
+const IS_IOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
+function openAS(name,lat,lng,gmap){const q=gmap||encodeURIComponent(name);const encName=encodeURIComponent(name);const appleUrl=IS_IOS?`maps://maps.apple.com/?q=${lat},${lng}&name=${encName}`:`https://maps.apple.com/?q=${lat},${lng}&ll=${lat},${lng}&name=${encName}`;const googleUrl=`https://www.google.com/maps/search/?api=1&query=${q}`;document.getElementById('as-opts').innerHTML=`<button class="as-item" onclick="window.open('${appleUrl}');closeAS()">🍎 Apple Maps</button><button class="as-item" onclick="window.open('${googleUrl}');closeAS()">🗺️ Google Maps</button>`;asOverlay.classList.add('show')}
+function closeAS(){asOverlay.classList.remove('show')}
+
+go(0);
+</script>
+</body>
+</html>
